@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
 
 public class JoystickToSlider : MonoBehaviour
 {
     public Slider frequencySlider;
-    public InputActionReference moveAction; // 左摇杆控制移动
-    public InputActionReference rotateAction; // 右摇杆控制旋转
     public InputActionReference joystickInputAction; // 额外绑定摇杆输入
     public float sliderSpeed = 2.0f;
-
     private bool isUIActive = false;
-    private ActionBasedController[] xrControllers;
+
+    private DisableMovementController movementController; // 用于管理移动的脚本
 
     private void OnEnable()
     {
@@ -26,49 +23,36 @@ public class JoystickToSlider : MonoBehaviour
 
     private void Start()
     {
-        xrControllers = FindObjectsOfType<ActionBasedController>(); // 获取所有 XR 控制器
+        // 在场景中找到 DisableMovementController
+        movementController = FindObjectOfType<DisableMovementController>();
+        if (movementController == null)
+        {
+            Debug.LogError("找不到 DisableMovementController，请确保它挂在玩家对象上！");
+        }
     }
 
     private void UpdateUIState(bool active)
     {
         isUIActive = active;
-        Debug.Log($"UpdateUIState() 触发，isUIActive: {isUIActive}");
+        Debug.Log($"UI 状态变更: isUIActive = {isUIActive}");
 
-        if (isUIActive)
+        if (movementController != null)
         {
-            DisableMovement(); // 禁用玩家移动
-        }
-        else
-        {
-            EnableMovement(); // 恢复玩家移动
+            if (isUIActive)
+                movementController.DisableMovement();
+            else
+                movementController.EnableMovement();
         }
     }
 
     private void Update()
     {
-        if (!isUIActive) return; // 如果 UI 关闭，直接跳出 Update
+        if (!isUIActive) return; // 如果 UI 关闭，不执行滑动条操作
 
-        float joystickX = joystickInputAction.action.ReadValue<Vector2>().x; // 直接从摇杆输入读取
-        if (Mathf.Abs(joystickX) > 0.1f) // 避免微小输入
+        float joystickX = joystickInputAction.action.ReadValue<Vector2>().x; // 读取摇杆 X 轴输入
+        if (Mathf.Abs(joystickX) > 0.1f) // 避免误触
         {
             frequencySlider.value += joystickX * sliderSpeed * Time.deltaTime;
-            //Debug.Log($"Slider 当前值: {frequencySlider.value}");
         }
-    }
-
-    private void DisableMovement()
-    {
-        if (moveAction.action != null) moveAction.action.Disable();
-        if (rotateAction.action != null) rotateAction.action.Disable();
-
-        Debug.Log("🚫 禁用玩家移动和旋转");
-    }
-
-    private void EnableMovement()
-    {
-        if (moveAction.action != null) moveAction.action.Enable();
-        if (rotateAction.action != null) rotateAction.action.Enable();
-
-        Debug.Log("✅ 恢复玩家移动和旋转");
     }
 }
