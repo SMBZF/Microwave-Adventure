@@ -7,7 +7,7 @@ public class JoystickToSlider : MonoBehaviour
     public Slider frequencySlider;
     public InputActionReference joystickInputAction; // 额外绑定摇杆输入
     public float sliderSpeed = 2.0f;
-    private bool isUIActive = false;
+    public bool isUIActive = false;
 
     private DisableMovementController movementController; // 用于管理移动的脚本
 

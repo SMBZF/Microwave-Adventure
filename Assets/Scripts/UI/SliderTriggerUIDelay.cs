@@ -1,6 +1,6 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class SliderTriggerUIDelay : MonoBehaviour
 {
@@ -14,7 +14,13 @@ public class SliderTriggerUIDelay : MonoBehaviour
     public float radioMaxValue = 174.0f;
     public float uvMinValue = 75.0f;
     public float uvMaxValue = 100.0f;
+    public float xrayMinValue = 81.8f; // X 射线模式的最小值
+    public float xrayMaxValue = 100.0f; // X 射线模式的最大值
     public float delayTime = 0.5f;
+
+    public Transform playerTransform; // 玩家位置
+    public float xrayDetectionRadius = 5.0f; // X 射线销毁检测半径
+    public string xrayTargetTag = "XRayTarget"; // 要销毁的物体的标签
 
     private Coroutine checkCoroutine;
     private bool isUIVisible = false;
@@ -54,7 +60,7 @@ public class SliderTriggerUIDelay : MonoBehaviour
                 checkCoroutine = StartCoroutine(WaitToShowUIAndObject("UV connection successful"));
             }
 
-            // **进入 UV 频率区间，只触发一次**
+            // 进入 UV 频率区间，只触发一次
             if (!hasTriggeredUVEffect)
             {
                 Interactor interactor = FindObjectOfType<Interactor>();
@@ -62,9 +68,18 @@ public class SliderTriggerUIDelay : MonoBehaviour
                 {
                     interactor.ActivateUVEffect();
                     hasTriggeredUVEffect = true;
-                    hasExitedUVRange = false; // 允许离开时触发 DeactivateUVEffect()
+                    hasExitedUVRange = false;
                 }
             }
+        }
+        else if (ElectromagneticMode.isXRayModeUnlocked && value >= xrayMinValue && value <= xrayMaxValue)
+        {
+            if (checkCoroutine == null)
+            {
+                checkCoroutine = StartCoroutine(WaitToShowUIAndObject("X-ray connection successful"));
+            }
+
+            DetectAndDestroyXRayTargets(); // 新增：检测并销毁 X 射线目标
         }
         else
         {
@@ -75,7 +90,7 @@ public class SliderTriggerUIDelay : MonoBehaviour
             }
             HideUIAndObject();
 
-            // **离开 UV 频率区间，只触发一次**
+            // 离开 UV 频率区间，只触发一次
             if (!hasExitedUVRange)
             {
                 Interactor interactor = FindObjectOfType<Interactor>();
@@ -83,7 +98,7 @@ public class SliderTriggerUIDelay : MonoBehaviour
                 {
                     interactor.DeactivateUVEffect();
                     hasExitedUVRange = true;
-                    hasTriggeredUVEffect = false; // 允许重新触发 ActivateUVEffect()
+                    hasTriggeredUVEffect = false;
                 }
             }
         }
@@ -152,6 +167,25 @@ public class SliderTriggerUIDelay : MonoBehaviour
         if (targetSlider != null)
         {
             targetSlider.onValueChanged.RemoveListener(OnSliderValueChanged);
+        }
+    }
+
+    private void DetectAndDestroyXRayTargets()
+    {
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("playerTransform 未绑定，无法执行 X 射线检测");
+            return;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(playerTransform.position, xrayDetectionRadius);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag(xrayTargetTag))
+            {
+                Debug.Log("X 射线检测到目标并销毁: " + hit.name);
+                Destroy(hit.gameObject);
+            }
         }
     }
 }

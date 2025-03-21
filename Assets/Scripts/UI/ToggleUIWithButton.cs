@@ -7,7 +7,7 @@ public class ToggleUIWithButton : MonoBehaviour
     public GameObject uiPanel; // 需要显示/隐藏的 UI 面板
     public InputActionReference toggleAction; // `B` 按钮的输入引用
     public bool isUIActive = false;
-    private bool canToggleUI = false; // 默认 UI 不能被按键触发
+    private bool canToggleUI = true; // 默认 UI 不能被按键触发
 
     public static event Action<bool> OnUIStateChanged; // 事件通知 UI 状态变化
 
@@ -23,7 +23,7 @@ public class ToggleUIWithButton : MonoBehaviour
         movementController = FindObjectOfType<DisableMovementController>();
         if (movementController == null)
         {
-            Debug.LogError("❌ 找不到 DisableMovementController，请确保它挂在玩家对象上！");
+            Debug.LogError("找不到 DisableMovementController，请确保它挂在玩家对象上！");
         }
 
         // 监听 B 按钮按下
