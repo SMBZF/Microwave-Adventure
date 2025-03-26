@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class ElectromagneticMode : MonoBehaviour
 {
     public static bool isUVModeUnlocked = false;  // UV 模式是否解锁
-    public static bool isXRayModeUnlocked = true; // X 射线模式是否解锁
+    public static bool isXRayModeUnlocked = false; // X 射线模式是否解锁
     public static bool isRadioModeUnlocked = true; // 无线电模式默认可用
 
     public GameObject frequencyUI; // 频率图 UI 面板

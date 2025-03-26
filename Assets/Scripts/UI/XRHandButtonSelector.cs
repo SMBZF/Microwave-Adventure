@@ -13,8 +13,12 @@ public class JoystickUIController : MonoBehaviour
     public Image displayImage; // UI 图片
     public Sprite[] buttonSprites; // 对应按钮的图片
     [TextArea] public string[] buttonTexts; // 对应按钮的文字
+
     public Image uvModeImage; // 紫外线模式解锁后显示的 UI 图片
     public Button uvModeButton; // 紫外线模式解锁后显示的 UI 按钮
+
+    public Image xrayModeImage; // X 射线模式解锁后显示的 UI 图片
+    public Button xrayModeButton; // X 射线模式解锁后显示的 UI 按钮
 
     [Header("手柄输入")]
     public InputActionReference toggleUIAction; // X 键控制 UI 显示/隐藏
@@ -28,30 +32,30 @@ public class JoystickUIController : MonoBehaviour
 
     private void Start()
     {
-        // UI 默认隐藏
         if (uiPanel != null)
         {
             uiPanel.SetActive(false);
         }
 
-        // UV 模式的 UI 组件默认隐藏
+        // UV 模式 UI 默认隐藏
         if (uvModeImage != null) uvModeImage.gameObject.SetActive(false);
         if (uvModeButton != null) uvModeButton.gameObject.SetActive(false);
 
-        // 获取 DisableMovementController
+        // X 射线模式 UI 默认隐藏
+        if (xrayModeImage != null) xrayModeImage.gameObject.SetActive(false);
+        if (xrayModeButton != null) xrayModeButton.gameObject.SetActive(false);
+
         movementController = FindObjectOfType<DisableMovementController>();
         if (movementController == null)
         {
             Debug.LogError("找不到 DisableMovementController，请确保它挂在玩家对象上");
         }
 
-        // 监听 X 键
         toggleUIAction.action.performed += ctx => ToggleUI();
     }
 
     private void OnDestroy()
     {
-        // 取消监听，防止报错
         toggleUIAction.action.performed -= ctx => ToggleUI();
     }
 
@@ -67,7 +71,7 @@ public class JoystickUIController : MonoBehaviour
 
         if (isUIActive)
         {
-            UIManager.Instance.ShowUI(uiPanel); // 使用 UIManager 控制 UI，避免冲突
+            UIManager.Instance.ShowUI(uiPanel);
         }
         else
         {
@@ -87,27 +91,31 @@ public class JoystickUIController : MonoBehaviour
 
     private void Update()
     {
-        if (!isUIActive || !canMove) return; // UI 关闭或冷却状态，不做处理
+        if (!isUIActive || !canMove) return;
 
-        CheckAndFixCurrentIndex(); // 避免选中隐藏按钮
+        CheckAndFixCurrentIndex();
 
         float joystickY = joystickInputAction.action.ReadValue<Vector2>().y;
 
-        if (joystickY > yThreshold) // 上推
+        if (joystickY > yThreshold)
         {
             MoveUp();
-            StartCoroutine(ResetMoveCooldown()); // 启动冷却，防止连续切换
+            StartCoroutine(ResetMoveCooldown());
         }
-        else if (joystickY < -yThreshold) // 下推
+        else if (joystickY < -yThreshold)
         {
             MoveDown();
-            StartCoroutine(ResetMoveCooldown()); // 启动冷却，防止连续切换
+            StartCoroutine(ResetMoveCooldown());
         }
 
-        // 检查 UV 模式是否解锁，解锁后显示 UI 组件
         if (ElectromagneticMode.isUVModeUnlocked)
         {
             ShowUVModeUI();
+        }
+
+        if (ElectromagneticMode.isXRayModeUnlocked)
+        {
+            ShowXRayModeUI();
         }
     }
 
@@ -213,6 +221,21 @@ public class JoystickUIController : MonoBehaviour
         {
             uvModeButton.gameObject.SetActive(true);
             Debug.Log("紫外线模式 UI 按钮已显示");
+        }
+    }
+
+    private void ShowXRayModeUI()
+    {
+        if (xrayModeImage != null && !xrayModeImage.gameObject.activeSelf)
+        {
+            xrayModeImage.gameObject.SetActive(true);
+            Debug.Log("X 射线模式 UI 图片已显示");
+        }
+
+        if (xrayModeButton != null && !xrayModeButton.gameObject.activeSelf)
+        {
+            xrayModeButton.gameObject.SetActive(true);
+            Debug.Log("X 射线模式 UI 按钮已显示");
         }
     }
 }

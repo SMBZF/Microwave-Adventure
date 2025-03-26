@@ -12,7 +12,7 @@ public class HaloSequence : MonoBehaviour
     private int currentIndex = -1; // 默认不亮起任何光圈
     private readonly string[] haloMessages =
     {
-        "Finally, I got a radio signal! I can use it to navigate.",
+        "Got a radio signal—navigation’s online. Press X to review the functions and frequencies of the waves I’ve picked up.",
         "Which way is right? Let's take a closer look.",
         "The halo is getting brighter, the signal stronger. I'm getting closer!",
         "High ground can reflect signals, causing 'dead zones'. I have to find my way now."
